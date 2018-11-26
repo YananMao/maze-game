@@ -6,8 +6,8 @@ function generateMazeArray(rows,lines){
   // 0 0 0 0 0
   // 0 1 0 1 0
   // 0 0 0 0 0
-  for (var i=0;i<2*rows+1;i++){
-    var temp =Array.apply(null, {length:lines*2+1}).map(function(value, index) {
+  for (var i=0;i<2*lines+1;i++){
+    var temp =Array.apply(null, {length:rows*2+1}).map(function(value, index) {
         return {
           value:i%2&&index%2,
           position:[i,index],
@@ -19,18 +19,21 @@ function generateMazeArray(rows,lines){
     // });
     mazeArray.push(temp);
   }
+  console.log('chushi',mazeArray);
   // 随意选取一个现在为1的点作为起点
-  var startRow = Math.floor(Math.random()*rows)*2+1;
-  var startLine = Math.floor(Math.random()*lines)*2+1;
-  var start = mazeArray[startRow][startLine];
+  var startX = Math.floor(Math.random()*lines)*2+1;
+  var startY = Math.floor(Math.random()*rows)*2+1;
+  var start = mazeArray[startX][startY];
   var current = start;
   initCurrentPoint(current);
   console.log(mazeArray);
-  return mazeArray;
+  console.log(visitedPoints);
 }
 function initCurrentPoint(current){
   current.isVisited = true;
-  visitedPoints.push(current);
+  if(visitedPoints.indexOf(current)<0){
+    visitedPoints.push(current);
+  }
   if(visitedPoints.length<rows*lines){
     var neighbor = getNeighbor(current);
     // 判断是否为空对象
@@ -55,7 +58,7 @@ function getNeighbor(current){
   ]
   neighborsPosition.forEach(function(position){
     var neighbor;
-    if(position[0]>0&&position[0]<rows*2+1&&position[1]>0&&position[1]<lines*2+1){
+    if(position[0]>0&&position[0]<rows*2&&position[1]>0&&position[1]<lines*2){
       // 邻居点要在迷宫范围之内
       neighbor = mazeArray[position[0]][position[1]];
     }
@@ -74,8 +77,118 @@ function getNeighbor(current){
 
 
 }
+function generateMazeGraphic(){
+  var startTargetIndex =initStartEnd();
+  for(var i=0;i<2*lines+1;i++){
+    for(var j=0;j<2*rows+1;j++){
+      if(i==1&&j==startTargetIndex[0]){
+        // 起点
+        ctx.fillStyle="red";
+      }else if (i==2*lines-1&&j==startTargetIndex[1]){
+        // 终点
+        ctx.fillStyle="green";
+      }else if(mazeArray[i][j].value=="1"){
+        ctx.fillStyle="#fff";
+      }else{
+        ctx.fillStyle = '#000'
+      }
+      ctx.fillRect(width*i,height*j,width,height);
+    }
+  }
+}
+function initStartEnd(){
+  var startIndex = 2*Math.floor(Math.random()*(rows))+1;
+  var targetIndex = 2*Math.floor(Math.random()*(rows))+1;
+  startPoint = mazeArray[1][startIndex];
+  targetPoint = mazeArray[2*lines-1][targetIndex];
+  currentPoint = startPoint;
+  return [startIndex,targetIndex]
+}
+function bindMoveEvent(){
+  document.body.addEventListener('keydown',function(e){
+    var keynum;
+    if(window.event) {
+      // IE
+      keynum = e.keyCode
+    }else if(e.which) {
+      // Netscape/Firefox/Opera
+      keynum = e.which
+    }
+    switch (keynum){
+      case 37:
+          //left
+          move('left');
+          break;
+      case 38:
+          // top
+          move('top');
+          break;
+      case 39:
+          // right
+          move('right');
+          break;
+      case 40:
+          // down
+          move('down');
+          break;
+
+
+    }
+  })
+}
+
+function move(flag){
+  var currentPosition = currentPoint.position;
+  var newPosition = [];
+  switch(flag){
+    case 'left':
+      newPosition = [currentPosition[0]-1,currentPosition[1]];
+      break;
+    case 'top':
+      newPosition = [currentPosition[0],currentPosition[1]-1];
+      break;
+    case 'right':
+      newPosition = [currentPosition[0]+1,currentPosition[1]];
+      break;
+    case 'down':
+      newPosition = [currentPosition[0],currentPosition[1]+1];
+      break;
+
+  }
+  if(mazeArray[newPosition[0]][newPosition[1]].value==1){
+    newPoint = mazeArray[newPosition[0]][newPosition[1]]
+    moveTo(currentPoint,newPoint);
+    currentPoint = newPoint;
+  }else{
+    return
+  }
+}
+function drawRect(point,color){
+  ctx.fillStyle = color;
+  ctx.fillRect(width*point.position[0],height*point.position[1],width,height)
+}
+function moveTo(currentPoint,newPoint){
+  drawRect(currentPoint,'#fff');
+  drawRect(newPoint,'red');
+
+}
+function initMovement(){
+  bindMoveEvent()
+}
+function init(){
+  generateMazeArray(rows,lines);
+  generateMazeGraphic();
+  initMovement()
+}
 var mazeArray = [];
 var visitedPoints = [];
-var rows = 2;
-var lines = 2;
-generateMazeArray(rows,lines)
+var rows = 20;
+var lines = 20;
+var width = 10;
+var height = 10;
+var startPoint;
+var targetPoint;
+var currentPoint;
+var myCanvas = document.getElementById('myCanvas');
+var ctx = myCanvas.getContext('2d');
+init();
