@@ -19,8 +19,7 @@ function generateMazeArray(rows,lines){
     // });
     mazeArray.push(temp);
   }
-  console.log('chushi',mazeArray);
-  // 随意选取一个现在为1的点作为起点
+   // 随意选取一个现在为1的点作为起点
   var startX = Math.floor(Math.random()*lines)*2+1;
   var startY = Math.floor(Math.random()*rows)*2+1;
   var start = mazeArray[startX][startY];
@@ -78,13 +77,13 @@ function getNeighbor(current){
 
 }
 function generateMazeGraphic(){
-  var startTargetIndex =initStartEnd();
+  initStartEnd();
   for(var i=0;i<2*lines+1;i++){
     for(var j=0;j<2*rows+1;j++){
-      if(i==1&&j==startTargetIndex[0]){
+      if(i==startPoint.position[0]&&j==startPoint.position[1]){
         // 起点
         ctx.fillStyle="red";
-      }else if (i==2*lines-1&&j==startTargetIndex[1]){
+      }else if (i==targetPoint.position[0]&&j==targetPoint.position[1]){
         // 终点
         ctx.fillStyle="green";
       }else if(mazeArray[i][j].value=="1"){
@@ -100,13 +99,13 @@ function initStartEnd(){
   var startIndex = 2*Math.floor(Math.random()*(rows))+1;
   var targetIndex = 2*Math.floor(Math.random()*(rows))+1;
   startPoint = mazeArray[1][startIndex];
-  targetPoint = mazeArray[2*lines-1][targetIndex];
+  // targetPoint = mazeArray[2*lines-1][targetIndex];
+  targetPoint = mazeArray[1][targetIndex];
   currentPoint = startPoint;
-  return [startIndex,targetIndex]
+  // return [startIndex,targetIndex]
 }
-function bindMoveEvent(){
-  document.body.addEventListener('keydown',function(e){
-    var keynum;
+function keydownHandler(e){
+  var keynum;
     if(window.event) {
       // IE
       keynum = e.keyCode
@@ -134,7 +133,12 @@ function bindMoveEvent(){
 
 
     }
-  })
+}
+function bindMoveEvent(){
+  document.body.addEventListener('keydown',keydownHandler)
+}
+function removeMoveEvent(){
+  document.body.removeEventListener('keydown',keydownHandler)
 }
 
 function move(flag){
@@ -159,9 +163,16 @@ function move(flag){
     newPoint = mazeArray[newPosition[0]][newPosition[1]]
     moveTo(currentPoint,newPoint);
     currentPoint = newPoint;
+    if(currentPoint.position.toString() == targetPoint.position.toString()){
+      succeed()
+    }
   }else{
     return
   }
+}
+function succeed(){
+  alert('congrats!!!');
+  restart()
 }
 function drawRect(point,color){
   ctx.fillStyle = color;
@@ -172,13 +183,37 @@ function moveTo(currentPoint,newPoint){
   drawRect(newPoint,'red');
 
 }
-function initMovement(){
-  bindMoveEvent()
+
+function initStartEvent(){
+  var start = document.getElementById('start');
+  start.addEventListener('click',function(){
+    bindMoveEvent();
+    var seconds = countDownSeconds;
+    timer = setInterval(function(){
+      seconds--;
+      if(seconds>-1){
+        timerButton.innerHTML = seconds+'s';
+      }else{
+        alert('nice try!!!')
+        // 
+        restart();
+        
+
+        
+      }
+    },1000)
+  })
+}
+function restart(){
+  window.clearInterval(timer);
+  removeMoveEvent();
+  init()
 }
 function init(){
+  timerButton.innerHTML = countDownSeconds+'s';
   generateMazeArray(rows,lines);
   generateMazeGraphic();
-  initMovement()
+  initStartEvent()
 }
 var mazeArray = [];
 var visitedPoints = [];
@@ -189,6 +224,12 @@ var height = 10;
 var startPoint;
 var targetPoint;
 var currentPoint;
+var countDownSeconds = 10;
+var timer;
 var myCanvas = document.getElementById('myCanvas');
+var timerButton = document.getElementById('timer');
+myCanvas.setAttribute('width',(lines*2+1)*width);
+myCanvas.setAttribute('height',(rows*2+1)*height);
+
 var ctx = myCanvas.getContext('2d');
 init();
