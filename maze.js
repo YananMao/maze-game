@@ -99,8 +99,8 @@ function initStartEnd(){
   var startIndex = 2*Math.floor(Math.random()*(rows))+1;
   var targetIndex = 2*Math.floor(Math.random()*(rows))+1;
   startPoint = mazeArray[1][startIndex];
-  // targetPoint = mazeArray[2*lines-1][targetIndex];
-  targetPoint = mazeArray[1][targetIndex];
+  targetPoint = mazeArray[2*lines-1][targetIndex];
+  // targetPoint = mazeArray[1][targetIndex];
   currentPoint = startPoint;
   // return [startIndex,targetIndex]
 }
@@ -194,7 +194,7 @@ function initStartEvent(){
       if(seconds>-1){
         timerButton.innerHTML = seconds+'s';
       }else{
-        alert('nice try!!!')
+        alert('give it another try!!!')
         // 
         restart();
         
@@ -204,15 +204,18 @@ function initStartEvent(){
     },1000)
   })
 }
-function restart(){
-  window.clearInterval(timer);
-  removeMoveEvent();
-  init()
-}
-function init(){
+function initializeSettings(){
   timerButton.innerHTML = countDownSeconds+'s';
   generateMazeArray(rows,lines);
   generateMazeGraphic();
+}
+function restart(){
+  window.clearInterval(timer);
+  removeMoveEvent();
+  initializeSettings()
+}
+function init(){
+  initializeSettings();
   initStartEvent()
 }
 var mazeArray = [];
@@ -224,7 +227,7 @@ var height = 10;
 var startPoint;
 var targetPoint;
 var currentPoint;
-var countDownSeconds = 10;
+var countDownSeconds = 100;
 var timer;
 var myCanvas = document.getElementById('myCanvas');
 var timerButton = document.getElementById('timer');
